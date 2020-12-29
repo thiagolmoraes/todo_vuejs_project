@@ -28,32 +28,54 @@ mongoose.connect("mongodb://localhost:27017/todo", { useNewUrlParser: true, useU
 //CRUDs 
 //--Save
 app.post('/save', async(req, res) => {
-    console.log(req.body)
-    const dados = new TodoTask({
-        task: req.body.task
-    });
-
     try {
+        const dados = new TodoTask({
+            task: req.body.task
+        });
         await dados.save()
         res.send({ "status": 200, "mensagem": "Salvo com Sucesso" })
     } catch (error) {
+        console.log(`Error save ${error}`)
         res.send({ "status": 400, "mensagem": "Ocorreu um erro durante o processo" })
     }
 })
 
 //--Read
 app.get('/tasks', async(req, res) => {
-    TodoTask.find({}, (err, task) => {
-        res.send(task)
-    })
+    try {
+        TodoTask.find({}, (err, task) => {
+            res.send(task)
+        })
+    } catch (error) {
+        console.log(`Error list ${error}`)
+    }
 })
 
 //--Delete
-app.post('/delete/:id', async(req, res) => {
-    const id = req.body.id;
-    TodoTask.findByIdAndDelete(id, err => {
-        if (err) return res.send(500, err);
-    })
+app.delete('/delete/:id', async(req, res) => {
+    try {
+        const id = req.body.id;
+        TodoTask.findByIdAndDelete(id, err => {
+            if (err) return res.send(500, err);
+            res.send({ 'status': 200, "mensagem": 'Tarefa deletada' })
+        })
+    } catch (error) {
+        console.log(`Error Delete ${error}`)
+    }
+})
+
+//--Update
+app.put('/edit/:id', async(req, res) => {
+    try {
+        console.log(req.params.id, req.body.task);
+        TodoTask.findByIdAndUpdate(req.params.id, { task: req.body.task }, (err, docs) => {
+            if (err) {
+                console.log(err);
+            }
+        })
+    } catch (error) {
+        console.log(`Error Update ${error}`)
+    }
 })
 
 app.listen(port, () => {
