@@ -25,7 +25,7 @@ export default new Vuex.Store({
             commit("SET_TASK", content)
         },
 
-        async SAVE_TASK({ commit }, object) {
+        async SAVE_TASK({ commit, dispatch }, object) {
             try {
                 const rawResponse = await fetch('http://localhost:3000/save', {
                     method: 'POST',
@@ -37,13 +37,14 @@ export default new Vuex.Store({
                 });
                 const content = await rawResponse.json();
                 commit("SET_MESSAGE", content)
+                dispatch("GET_TASK")
             } catch (error) {
                 console.log(error);
             }
 
         },
 
-        async DELETE_TASK({ commit }, obj) {
+        async DELETE_TASK({ commit, dispatch }, obj) {
             try {
                 const id = obj['id']
                 const raw = await fetch(`http://localhost:3000/delete/${id}`, {
@@ -56,12 +57,13 @@ export default new Vuex.Store({
                 });
                 const content = await raw.json();
                 commit("SET_MESSAGE", content)
+                dispatch("GET_TASK")
             } catch (error) {
                 console.log(`DELETE_TASK ${error}`)
             }
         },
 
-        async UPDATE_TASK({ commit }, obj) {
+        async UPDATE_TASK({ commit, dispatch }, obj) {
             try {
                 const id = obj['id']
                 const raw = await fetch(`http://localhost:3000/edit/${id}`, {
@@ -74,6 +76,7 @@ export default new Vuex.Store({
                 });
                 const content = await raw.json();
                 commit("SET_MESSAGE", content)
+                dispatch("GET_TASK")
             } catch (error) {
                 console.log(`UPDATED_TASK ${error}`)
             }
