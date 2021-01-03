@@ -1,10 +1,10 @@
 const express = require('express');
 const app = express();
-const path = require('path')
+const bcrypt = require('bcrypt');
 const port = 3000
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
-const { TodoTask } = require("./model")
+const { TodoTask, User } = require("./model")
 const cors = require('cors')
 
 app.use(cors())
@@ -13,10 +13,18 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 // ConnectDB
-mongoose.set("useFindAndModify", false);
-mongoose.connect("mongodb://localhost:27017/todo", { useNewUrlParser: true, useUnifiedTopology: true }, () => {
-    console.log("Connected DB")
-})
+mongoose.connect(`mongodb://localhost:27017/todo`, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false
+    })
+    .then(() => {
+        console.log("Successfully connect to MongoDB.");
+    })
+    .catch(err => {
+        console.error("Connection error", err);
+        process.exit();
+    });
 
 //app.use(express.static(path.join(__dirname, './dist')))
 
@@ -48,6 +56,27 @@ app.get('/tasks', async(req, res) => {
         })
     } catch (error) {
         console.log(`Error list ${error}`)
+    }
+})
+
+//--Login
+app.post('/login', async(req, res) => {
+    try {
+        await User.findOne({ username: req.body.username }, function(err, user) {
+            if (typeof user === 'object' && user !== null) {
+                user.comparePassword(req.body.password, function(err, isMatch) {
+                    if (isMatch) {
+                        res.status(200).send("User/Password is correct")
+                    } else {
+                        res.status(400).send("Invalid Password")
+                    }
+                })
+            } else {
+                res.status(401).send("User not found")
+            }
+        })
+    } catch (error) {
+        res.send(`Error User ${error}`)
     }
 })
 

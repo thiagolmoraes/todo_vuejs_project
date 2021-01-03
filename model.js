@@ -1,26 +1,42 @@
-const mongoose = require("mongoose")
-const crypto = require("crypto")
-
+const mongoose = require("mongoose");
+const bcrypt = require('bcrypt');
+const SALT_WORK_FACTOR = 10;
 
 //Schemas
 
 const UserSchema = new mongoose.Schema({
-    username: String,
-    salt: String,
-    hash: String
+    username: {
+        type: String,
+        unique: true,
+        required: true
+    },
+    password: { type: String, required: true }
+
 })
 
-UserSchema.methods.setPassword = (password) => {
-    this.salt = crypto.randomBytes(16).toString('hex');
-    this.hash = crypto.pbkdf2Sync(password, this.salt,
-        1000, 64, `sha512`).toString(`hex`);
+UserSchema.pre('save', async function(next) {
+    var user = this;
 
-}
+    if (!user.isModified('password')) return next();
 
-UserSchema.methods.validPassword = (password) => {
-    var hash = crypto.pbkdf2Sync(password,
-        this.salt, 1000, 64, `sha512`).toString(`hex`);
-    return this.hash === hash;
+    bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
+        if (err) return next(err);
+
+        bcrypt.hash(user.password, salt, function(err, hash) {
+            if (err) return next(err);
+
+            user.password = hash;
+            next();
+        });
+    });
+});
+
+UserSchema.methods.comparePassword = function(candidatePassword, cb) {
+    bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
+        if (err) return cb(err);
+        cb(null, isMatch);
+    });
+
 };
 
 const TodoSchema = new mongoose.Schema({
