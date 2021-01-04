@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import router from '../router'
+// import router from '../router'
 
 
 Vue.use(Vuex)
@@ -11,14 +11,6 @@ const state = {
     user: [],
 };
 
-const getters = {
-    CHECK_STATUS_USER: function(state) {
-        if (state.user === "Invalid Password" || state.user === "User not found") {
-            return "User or Password Invalid, try again!"
-        }
-        if (state.user === "User/Password is correct") router.push('/')
-    }
-}
 
 const mutations = {
     SET_TASK: function(state, task) {
@@ -41,10 +33,18 @@ const actions = {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 'username': obj['username'], 'password': obj['password'] })
+                body: JSON.stringify({ username: obj['username'], password: obj['password'] })
             });
-            const content = await raw.text();
-            commit("SET_USER", content);
+            const content = await raw.json();
+            if (Object.prototype.hasOwnProperty.call(content, 'user_ob')) {
+                const obj = { id: content.user_ob._id, username: content.user_ob.username }
+                commit("SET_USER", obj);
+            }
+
+            if (Object.prototype.hasOwnProperty.call(content, 'message')) {
+                commit("SET_USER", content.message);
+            }
+
         } catch (err) {
             console.log(`GET_USER ${err}`)
         }
@@ -116,7 +116,6 @@ const actions = {
 
 export default new Vuex.Store({
     state,
-    getters,
     mutations,
     actions
 })

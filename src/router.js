@@ -7,9 +7,7 @@ Vue.use(VueRouter)
 const routes = [{
         path: '/',
         beforeEnter: (to, from, next) => {
-            // console.log(JSON.parse(JSON.stringify(store.state.user)));
-            // console.log(!store.getters.CHECK_CLIENTE_STATE.length)
-            if (!store.state.user.length) {
+            if (!store.state.user.id) {
                 next('/login')
             }
             next();

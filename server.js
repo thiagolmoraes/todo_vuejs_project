@@ -66,13 +66,13 @@ app.post('/login', async(req, res) => {
             if (typeof user === 'object' && user !== null) {
                 user.comparePassword(req.body.password, function(err, isMatch) {
                     if (isMatch) {
-                        res.status(200).send("User/Password is correct")
+                        res.status(200).send({ user_ob: user })
                     } else {
-                        res.status(400).send("Invalid Password")
+                        res.status(400).send({ message: "Invalid Password" })
                     }
                 })
             } else {
-                res.status(401).send("User not found")
+                res.status(401).send({ message: "User not found" })
             }
         })
     } catch (error) {

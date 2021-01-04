@@ -21,11 +21,6 @@
 <script>
 export default {
     name:  "Login",
-    computed:{
-      message(){
-        return this.$store.getters.CHECK_STATUS_USER
-      }
-    },
     data(){
       return{
         username: '',
@@ -35,8 +30,20 @@ export default {
     methods: {
       async login() {
         try{
-            await this.$store.dispatch("GET_USER",{username:this.username,password:this.password})
-            this.$notify({ group: 'auth', type: 'error', text: this.$store.getters.CHECK_STATUS_USER })
+            await this.$store.dispatch("GET_USER",{username:this.username,password:this.password}).then(
+              response => {
+                if(typeof(this.$store.state.user)=== "object"){
+                  this.$router.push('/');
+                }else{
+                  this.$notify({
+                  group: 'auth',
+                  type: 'error',                  
+                  text: this.$store.state.user
+                });
+                }
+                console.log(response)    
+             })
+            
         }catch(error){
             console.log(`User FETCH: ${error}`);
         }
